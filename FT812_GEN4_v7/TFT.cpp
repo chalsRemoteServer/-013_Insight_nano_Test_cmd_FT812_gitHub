@@ -2,6 +2,7 @@
 #include <SPI.h>        // Arduino SPI Library definitions
 #include "TFT.h"
 #include "FT812.h"      // FT812 register, memory and command values
+#include "Config_Hardware.h"
 
 
 /* Global Variables */
@@ -199,7 +200,7 @@ unsigned int incCMDOffset(unsigned int currentOffset, unsigned char commandSize)
 }//----------------------------------------------------------------------------
 
 
-void init_TFT_display(void){
+void init_TFT_display_b(void){
 #ifdef LCD_MICROTIPS      // WQVGA display parameters
     lcdWidth   = 800;   // Active width of LCD display
     lcdHeight  = 480;   // Active height of LCD display
@@ -230,4 +231,97 @@ void init_TFT_display(void){
   ft812memWrite8(REG_PCLK_POL, lcdPclkpol); // Data clocked on this PCLK edge
   // Don't set PCLK yet - wait for just after the first display list
   /* End of Initialize Display */
+
+
 }//-------------------------------------------------------------------------------
+
+void init_Parametros_TFT_display(void){
+ // Read the FT800 GPIO register for a read/modify/write operation
+  ft812Gpio = ft812memRead8(REG_GPIO);
+  // set bit 7 of FT800 GPIO register (DISP) - others are inputs
+  ft812Gpio = ft812Gpio | 0x80;
+  // Enable the DISP signal to the LCD panel        
+  ft812memWrite8(REG_GPIO, ft812Gpio);
+  // Now start clocking data to the LCD panel
+  ft812memWrite8(REG_PCLK, lcdPclk);  
+}//fin de parametros del TFT display+-------------------------------------------- 
+
+
+void init_Vars_TFT_display(void){
+/* Write Initial Display List & Enable Display */
+  ramDisplayList = RAM_DL;                            // start of Display List
+  // Clear Color RGB   00000010 RRRRRRRR GGGGGGGG BBBBBBBB
+  // (R/G/B = Colour values) default zero / black
+  ft812memWrite32(ramDisplayList, DL_CLEAR_RGB);      
+  ramDisplayList += 4;                                // point to next location
+  // Clear 00100110 -------- -------- -----CST
+  // (C/S/T define which parameters to clear)
+  ft812memWrite32(ramDisplayList, (DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG));  
+  ramDisplayList += 4;                                // point to next location
+  // DISPLAY command 00000000 00000000 00000000 00000000 (end of display list)
+  ft812memWrite32(ramDisplayList, DL_DISPLAY);                                
+  // 00000000 00000000 00000000 000000SS  (SS bits define when render occurs)
+  ft812memWrite32(REG_DLSWAP, DLSWAP_FRAME);                                  
+  // Nothing is being displayed yet... the pixel clock is still 0x00
+  ramDisplayList = RAM_DL;          // Reset Display List pointer for next list
+}//-------------------------------------------------------------------------------
+
+void init_SPI_controls_wires_00(void){
+#ifdef DEBUG_RS232
+     Serial.println(" 00");
+#endif
+//pinMode(triggerPin, OUTPUT);        // Oscilloscope triggering
+  //pinMode(SPI_INT, INPUT_PULLUP);     // FT812 interrupt output
+  pinMode(SPI_PD, OUTPUT);            // FT812 Power Down (reset) input
+  pinMode(SPI_CS, OUTPUT);            // FT812 SPI bus CS# input 
+  //digitalWrite(triggerPin, LOW);      // Initialize the oscilloscope trigger
+  digitalWrite(SPI_CS, HIGH);         // Set CS# high to start - SPI inactive
+  digitalWrite(SPI_PD, HIGH);         // Set PD# high to start
+  delay(20);                          // Wait a few MS before waking the FT812
+#ifdef DEBUG_RS232
+  Serial.println(" 0");
+#endif
+}//fin init spi controls lineas de control de SPI---------------------------------
+
+
+void  init_Encender_TFT_display_0(void){
+  /* Wake-up FT812 */
+  digitalWrite(SPI_PD, LOW);          // 1) lower PD#
+  delay(20);                          // 2) hold for 20ms
+  digitalWrite(SPI_PD, HIGH);         // 3) raise PD#
+  delay(20);                          // 4) wait before sending any commands
+#ifdef DEBUG_RS232
+  Serial.println(" 1");
+#endif
+}//fin --------------------------------------------------------------------------
+
+void  init_Start_TFT_display_1(void){
+  ft812cmdWrite(FT812_ACTIVE);        // Start FT812
+  delay(300);                         // Give some time to process
+  // Now FT812 can accept commands at up to 30MHz clock on SPI bus
+  // This application leaves the SPI bus at 10MHz
+#ifdef DEBUG_RS232
+  Serial.println(" 2");
+#endif
+}//fin---------------init_Start_TFT_display-----------------------------------------------------------
+
+//Encender leds de error aqui--------------------------
+void init_Read_ID_TFT_display_2(void){
+int i;
+  while (i != 0x7C) // Read ID register - is it 0x7C?
+  {  i=ft812memRead8(REG_ID);// If we don't get 0x7C, the interface isn't working - halt with inf. loop
+     /*Serial.println(i);*/}
+#ifdef DEBUG_RS232
+  Serial.println(" 3");
+#endif
+}//----------------------------------------------------------------------------
+
+void init_WakeUp_FT800_a(void){
+  init_SPI_controls_wires_00();
+  init_Encender_TFT_display_0();
+  init_Start_TFT_display_1();
+  init_Read_ID_TFT_display_2();
+  ft812memWrite8(REG_PCLK, ZERO);       // Set PCLK to zero  // Don't clock the LCD until later
+  ft812memWrite8(REG_PWM_DUTY, ZERO);   // Turn off backlight
+  /* End of Wake-up FT800 */
+}//fin void ft800+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

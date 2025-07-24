@@ -2,15 +2,7 @@
 
 /* Declarations */
 
-// Set LCD display resolution here
-//#define LCD_WQVGA       // WQVGA = 480 x 272 (4.3")
-#define LCD_MICROTIPS  //800 x 480 ( 5.0 ")
-// Set Arduino platform here
-#define ARDUINO_NANO       
 
-// Set SPI speed here
-#define SPI_SPEED 1000000     // SPI transfer speed
-                              // 1-10 MHz is recommended
 // FT800 Chip Commands - use with cmdWrite
 #define FT812_ACTIVE  0x00      // Initializes FT812
 #define FT812_STANDBY 0x41      // Place FT812 in Standby (clk running)
@@ -49,4 +41,10 @@ unsigned int ft812memRead16(unsigned long ftAddress);
 unsigned long ft812memRead32(unsigned long ftAddress);
 void ft812cmdWrite(unsigned char ftCommand);
 unsigned int incCMDOffset(unsigned int currentOffset, unsigned char commandSize);
-void init_TFT_display(void);
+void init_TFT_display_b(void);
+void init_Parametros_TFT_display(void);
+void init_Vars_TFT_display(void);
+void init_SPI_controls_wires_00(void);
+void init_Encender_TFT_display_0(void);
+void init_Start_TFT_display_1(void);
+void init_WakeUp_FT800_a(void);

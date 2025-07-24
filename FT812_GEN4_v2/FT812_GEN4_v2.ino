@@ -8,6 +8,22 @@
 // Author: R. Abrante Delgado
 // Date: 26/05/2021
 
+/* The Arduino Normal   pins are connected to the GEN4-FT812-43T as follows:
+      Digital
+        Pin 0 = n/c  (out)      Pin 8    = n/c
+        Pin 1 = n/c  (in)       Pin 9    = CS#  (out)
+        Pin 2 = n/c             Pin 10   = n/c
+        Pin 3 = PD#  (out)      Pin 11   = MOSI (out)
+        Pin 4 = n/c             Pin 12   = MISO (in)
+        Pin 5 = n/c             Pin 13   = SCK  (out)
+        pin 6 = n/c             Pin GND  = GND
+        pin 7 = n/c             Pin AREF = n/c
+        
+      Analog and power headers = n/c
+  */
+
+
+
 /* Include Files */
 
 #include <Arduino.h>    // Arduino definitions
@@ -251,20 +267,7 @@ unsigned int incCMDOffset(unsigned int currentOffset, unsigned char commandSize)
  * Overview:        System initialization routines.  Executed once on reset.
  * Note:            Default Arduino function
  *****************************************************************************/
-  /* The Teensy 3.2 I/O pins are connected to the GEN4-FT812-43T as follows:
-      Digital
-        Pin 0 = n/c  (out)    Pin 8    = n/c
-        Pin 1 = n/c  (in)       Pin 9    = n/c
-        Pin 2 = n/c               Pin 10   = CS#  (out)
-        Pin 3 = INT# (in)     Pin 11   = MOSI (out)
-        Pin 4 = PD#  (out)   Pin 12   = MISO (in)
-        Pin 5 = n/c                Pin 13   = SCK  (out)
-        pin 6 = n/c                Pin GND  = GND
-        pin 7 = n/c                Pin AREF = n/c
-        
-      Analog and power headers = n/c
-  */
-
+  
 void setup() {
   int i,n,d;  
   // Teensy <-> FT812 connection
@@ -279,17 +282,17 @@ void setup() {
   #endif
   
   #ifdef LCD_WQVGA      // WQVGA display parameters
-    lcdWidth   = 480;   // Active width of LCD display
-    lcdHeight  = 272;   // Active height of LCD display
-    lcdHcycle  = 548;   // Total number of clocks per line
-    lcdHoffset = 43;    // Start of active line
+   lcdWidth   = 800;   // Active width of LCD display
+    lcdHeight  = 480;   // Active height of LCD display
+    lcdHcycle  = 928;   // Total number of clocks per line
+    lcdHoffset = 88;    // Start of active line
     lcdHsync0  = 0;     // Start of horizontal sync pulse
-    lcdHsync1  = 41;    // End of horizontal sync pulse
-    lcdVcycle  = 292;   // Total number of lines per screen
-    lcdVoffset = 12;    // Start of active screen
+    lcdHsync1  = 48;    // End of horizontal sync pulse
+    lcdVcycle  = 525;   // Total number of lines per screen
+    lcdVoffset = 32;    // Start of active screen
     lcdVsync0  = 0;     // Start of vertical sync pulse
-    lcdVsync1  = 10;    // End of vertical sync pulse
-    lcdPclk    = 5;     // Pixel Clock
+    lcdVsync1  = 3;    // End of vertical sync pulse
+    lcdPclk    = 2;     // Pixel Clock
     lcdSwizzle = 0;     // Define RGB output pins
     lcdPclkpol = 1;     // Define active edge of PCLK
   #endif

@@ -445,10 +445,10 @@ void loop()
   ft812memWrite32(RAM_DL + offset, DL_BEGIN | POINTS );offset += 4; //POINTS=2, start drawing points
   ft812memWrite32(RAM_DL + offset, VERTEX2F(30*16,17*6));offset += 4; //red point 
   ft812memWrite32(RAM_DL + offset, COLOR_RGB(0,128,0));offset += 4;//cambia color a rojo;
-  ft812memWrite32(RAM_DL + offset, POINT_SIZE(8*16));offset += 4;// pone el tamaño del punto a 20 pixeles de radio
+  ft812memWrite32(RAM_DL + offset, POINT_SIZE(8*16));offset += 4;// pone el tamaño del punto a 20 pixeles de radioFFFFFFFFFFFF
   ft812memWrite32(RAM_DL + offset, VERTEX2F(90*16,17*6));offset += 4;
   
-  ft812memWrite32(RAM_DL + offset, COLOR_RGB(0,0,128));offset += 4;//cambia color a rojo;
+  ft812memWrite32(RAM_DL + offset, COLOR_RGB(0,0,128));offset += 4;//cambia color a rojo;ttFFFFFFFFff
   ft812memWrite32(RAM_DL + offset, POINT_SIZE(10*16));offset += 4;// pone el tamaño del punto a 20 pixeles de radio
   ft812memWrite32(RAM_DL + offset, VERTEX2F(30*16,51*6));offset += 4;
   

@@ -25,6 +25,7 @@
 /* Include Files */
 
 #include <Arduino.h>    // Arduino definitions
+#include "Config_Hardware.h"
 #include <SPI.h>        // Arduino SPI Library definitions
 #include "FT812.h"      // FT812 register, memory and command values
 #include "FT81x.h"
@@ -49,55 +50,16 @@ void setup() {
     SPI_CS= 9;
     SPI_PD= 3;
   #endif
-  
-
-
-  Serial.begin(9600);   // Initialize UART for debugging messages
+  #ifdef DEBUG_RS232
+    Serial.begin(9600);   // Initialize UART for debugging messages
+  #endif
   SPI.begin();                        // Start SPI settings
   delay(3000);
   d=80;
   n=3000/(d*2);
-  pinMode(LED_BUILTIN, OUTPUT);
-  for(i=0;i<n;i++){
-     digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-     delay(d);                       // wait for a second
-     digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-     delay(d);
-     }   
-  Serial.println("\n\n\n 00");
-  pinMode(triggerPin, OUTPUT);        // Oscilloscope triggering
-  pinMode(SPI_INT, INPUT_PULLUP);     // FT812 interrupt output
-  pinMode(SPI_PD, OUTPUT);            // FT812 Power Down (reset) input
-  pinMode(SPI_CS, OUTPUT);            // FT812 SPI bus CS# input
-   
-  digitalWrite(triggerPin, LOW);      // Initialize the oscilloscope trigger
-  digitalWrite(SPI_CS, HIGH);         // Set CS# high to start - SPI inactive
-  digitalWrite(SPI_PD, HIGH);         // Set PD# high to start
-  delay(20);                          // Wait a few MS before waking the FT812
-  Serial.println(" 0");
-  /* Wake-up FT812 */
-  digitalWrite(SPI_PD, LOW);          // 1) lower PD#
-  delay(20);                          // 2) hold for 20ms
-  digitalWrite(SPI_PD, HIGH);         // 3) raise PD#
-  delay(20);                          // 4) wait before sending any commands
-  Serial.println(" 1");
-  ft812cmdWrite(FT812_ACTIVE);        // Start FT812
-  delay(300);                         // Give some time to process
-  
-  // Now FT812 can accept commands at up to 30MHz clock on SPI bus
-  // This application leaves the SPI bus at 10MHz
-  Serial.println(" 2 ");
-  while (i != 0x7C) // Read ID register - is it 0x7C?
-  {  i=ft812memRead8(REG_ID);
-    // If we don't get 0x7C, the interface isn't working - halt with inf. loop
-   Serial.println(i);
-   }
-  Serial.println("3 ");
-  ft812memWrite8(REG_PCLK, ZERO);       // Set PCLK to zero
-                                        // Don't clock the LCD until later
-  ft812memWrite8(REG_PWM_DUTY, ZERO);   // Turn off backlight
-  /* End of Wake-up FT800 */
-  init_TFT_display();//Initialize Display 
+  pinMode(LED_BUILTIN, OUTPUT);   
+  init_WakeUp_FT800_a();
+  init_TFT_display_b();//Initialize Display 
   Serial.println("4 ");
   /* Configure Touch and Audio - not used in this example, so disable both */
   ft812memWrite8(REG_TOUCH_MODE, ZERO);       // Disable touch
@@ -105,34 +67,12 @@ void setup() {
   
   ft812memWrite8(REG_VOL_PB, ZERO);           // turn recorded volume down
   ft812memWrite8(REG_VOL_SOUND, ZERO);        // turn synthesizer volume down
-  ft812memWrite16(REG_SOUND, 0x6000);         // set synthesizer to mute
+  ft812memWrite16(REG_SOUND, 0x6000);         // set synthesizer to mute  
   /* End of Configure Touch and Audio */
   Serial.println(" 5 ");
-  /* Write Initial Display List & Enable Display */
-  ramDisplayList = RAM_DL;                            // start of Display List
-  // Clear Color RGB   00000010 RRRRRRRR GGGGGGGG BBBBBBBB
-  // (R/G/B = Colour values) default zero / black
-  ft812memWrite32(ramDisplayList, DL_CLEAR_RGB);      
-  ramDisplayList += 4;                                // point to next location
-  // Clear 00100110 -------- -------- -----CST
-  // (C/S/T define which parameters to clear)
-  ft812memWrite32(ramDisplayList, (DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG));  
-  ramDisplayList += 4;                                // point to next location
-  // DISPLAY command 00000000 00000000 00000000 00000000 (end of display list)
-  ft812memWrite32(ramDisplayList, DL_DISPLAY);                                
-  // 00000000 00000000 00000000 000000SS  (SS bits define when render occurs)
-  ft812memWrite32(REG_DLSWAP, DLSWAP_FRAME);                                  
-  // Nothing is being displayed yet... the pixel clock is still 0x00
-  ramDisplayList = RAM_DL;          // Reset Display List pointer for next list
+   init_Vars_TFT_display();
    Serial.println("6 ");
-  // Read the FT800 GPIO register for a read/modify/write operation
-  ft812Gpio = ft812memRead8(REG_GPIO);
-  // set bit 7 of FT800 GPIO register (DISP) - others are inputs
-  ft812Gpio = ft812Gpio | 0x80;
-  // Enable the DISP signal to the LCD panel        
-  ft812memWrite8(REG_GPIO, ft812Gpio);
-  // Now start clocking data to the LCD panel
-  ft812memWrite8(REG_PCLK, lcdPclk);   
+   init_Parametros_TFT_display();
   Serial.println("7 ");
   for(int duty = 0; duty <= 128; duty++)
   {
