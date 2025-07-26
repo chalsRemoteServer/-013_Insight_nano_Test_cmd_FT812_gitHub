@@ -8,6 +8,11 @@
 // Author: R. Abrante Delgado
 // Date: 26/05/2021
 
+/*
+   este programa es para dibujar objetos y practicar
+
+*/
+
 /* Include Files */
 
 #include <Arduino.h>    // Arduino definitions
@@ -428,8 +433,27 @@ void setup() {
  * Note:            Default Arduino function
  *****************************************************************************/
 void loop() 
-{
-  Serial.write("Inicia loop\n");
+{ Serial.write("Inicia loop\n");
+ do{cmdBufferRd = ft812memRead16(REG_CMD_READ);// Read the graphics processor read pointer
+    cmdBufferWr = ft812memRead16(REG_CMD_WRITE);// Read the graphics processor write pointer
+    //Serial.write("loop in reg\n");  
+  } while (cmdBufferWr != cmdBufferRd);   // Wait until the two registers match
+   cmdOffset = cmdBufferWr;   // The new starting point the first location after the last command
+ 
+  ft812memWrite32(RAM_CMD + cmdOffset, (CMD_DLSTART));// Start the display list
+  cmdOffset = incCMDOffset(cmdOffset, 4);         // Update the command pointer
+  ft812memWrite32(RAM_CMD + cmdOffset, (DL_CLEAR_RGB | BLACK));// Set the default clear color to black
+  cmdOffset = incCMDOffset(cmdOffset, 4);         // Update the command pointer
+  ft812memWrite32(RAM_CMD + cmdOffset, (DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG)); // Clear the screen - this and the previous prevent artifacts between lists
+  cmdOffset = incCMDOffset(cmdOffset, 4);         // Update the command pointer
+
+
+ 
+ 
+ 
+ 
+ 
+ 
   uint32_t offset = 0;
   ft812memWrite8(REG_ROTATE, 1);
   ft812memWrite32(RAM_DL + offset, (DL_CLEAR | CLR_COL | CLR_STN | CLR_TAG));offset += 4; //cmdOffset = incCMDOffset(cmdOffset, 4); // Start the display list      

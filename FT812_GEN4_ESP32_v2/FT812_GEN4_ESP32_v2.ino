@@ -8,10 +8,10 @@
 // Author: R. Abrante Delgado
 // Date: 26/05/2021
 
-/* The Arduino Normal   pins are connected to the GEN4-FT812-43T as follows:
-   LA SEÑAL SALE DE 5Vpp se necesita poner traductores de señal
-  o divisores de tension para bajar MOSI, CLK, PD_N, CS, a niveles
-   pico de 3.3Vpp
+/* The ESP32-c3-devKitC-02v1.1 Normal   pins are connected to the GEN4-FT812-43T as follows:
+   El chip se alimenta con 5v y los niveles de salida de voltaje de las señales
+   son de 3.3vpp
+
       Digital
         Pin 0 = n/c  (out)      Pin 8    = n/c
         Pin 1 = n/c  (in)       Pin 9    = CS#  (out)
