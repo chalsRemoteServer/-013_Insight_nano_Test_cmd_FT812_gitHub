@@ -407,7 +407,7 @@ void TFT_display(void)
         /* display a picture and rotate it when the button on top is activated */
         EVE_cmd_setbitmap_burst(MEM_PIC1, EVE_RGB565, 100U, 100U);
 
-        EVE_save_context_burst();
+        //EVE_save_context_burst();
         EVE_cmd_loadidentity_burst();
         EVE_cmd_translate_burst(65536 * 70, 65536 * 50); /* shift off-center */
         EVE_cmd_rotate_burst(rotate);
@@ -423,14 +423,13 @@ void TFT_display(void)
         EVE_vertex2f_burst(EVE_HSIZE - 100, LAYOUT_Y1);
         EVE_end_burst();
 
-        EVE_restore_context_burst();
+        //EVE_restore_context_burst();
 
         /* print profiling values */
         EVE_color_rgb_burst(BLACK);
-
-        EVE_cmd_number_burst(100, EVE_VSIZE - 150, 30, EVE_OPT_RIGHTX, display_list_size); /* number of bytes written to the display-list by the command co-pro */
-        EVE_cmd_number_burst(104, EVE_VSIZE - 135, 30, EVE_OPT_RIGHTX|6U, num_profile_a); /* duration in us of TFT_loop() for the touch-event part */
-        EVE_cmd_number_burst(104, EVE_VSIZE - 120, 30, EVE_OPT_RIGHTX|6U, num_profile_b); /* duration in us of TFT_loop() for the display-list part */
+        EVE_cmd_number_burst(300, EVE_VSIZE - 160, 30, EVE_OPT_RIGHTX, display_list_size); /* number of bytes written to the display-list by the command co-pro */
+        EVE_cmd_number_burst(304, EVE_VSIZE - 135, 30, EVE_OPT_RIGHTX|6U, num_profile_a); /* duration in us of TFT_loop() for the touch-event part */
+        EVE_cmd_number_burst(304, EVE_VSIZE - 110, 30, EVE_OPT_RIGHTX|6U, num_profile_b); /* duration in us of TFT_loop() for the display-list part */
 
         EVE_display_burst(); /* mark the end of the display list */
         EVE_cmd_swap_burst(); /* make this list active */
@@ -440,70 +439,5 @@ void TFT_display(void)
 }
 #else
 void TFT_display(void)
-{
-    static int32_t rotate = 0;
-
-    if(tft_active != 0U)
-    {
-        #if defined (EVE_DMA)
-            uint16_t cmd_fifo_size;
-            cmd_fifo_size = EVE_dma_buffer_index*4; /* without DMA there is no way to tell how many bytes are written to the cmd-fifo */
-        #endif
-
-        EVE_start_cmd_burst(); /* start writing to the cmd-fifo as one stream of bytes, only sending the address once */
-        EVE_cmd_dlstart(); /* start the display list */
-        EVE_clear_color_rgb(WHITE); /* set the default clear color to white */
-        EVE_clear(1, 1, 1); /* clear the screen - this and the previous prevent artifacts between lists, Attributes are the color, stencil and tag buffers */
-        EVE_tag(0); /* no touch */
-
-#if EVE_GEN > 4
-        EVE_cmd_calllist(MEM_DL_STATIC); /* insert static part of display-list from copy in gfx-mem */
-#else
-        EVE_cmd_append(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
-#endif
-
-        /* display a button */
-        EVE_color_rgb(WHITE);
-        EVE_cmd_fgcolor(LIGHT_BROWN); /* some grey */
-        EVE_tag(10); /* assign tag-value '10' to the button that follows */
-        EVE_cmd_button(20,20,80,30, 28, toggle_state,"Touch..............!");
-        EVE_tag(0); /* no touch */
-
-        /* display a picture and rotate it when the button on top is activated */
-        EVE_cmd_setbitmap(MEM_PIC1, EVE_RGB565, 100U, 100U);
-
-        EVE_save_context();
-        EVE_cmd_loadidentity();
-        EVE_cmd_translate(65536 * 70, 65536 * 50); /* shift off-center */
-        EVE_cmd_rotate(rotate);
-        EVE_cmd_translate(65536 * -70, 65536 * -50); /* shift back */
-        EVE_cmd_setmatrix();
-
-        if(toggle_state != 0U)
-        {
-            rotate += 256;
-        }
-
-        EVE_begin(EVE_BITMAPS);
-        EVE_vertex2f(EVE_HSIZE - 100, LAYOUT_Y1);
-        EVE_end();
-
-        EVE_restore_context();
-
-        /* print profiling values */
-        EVE_color_rgb(BLACK);
-
-        #if defined (EVE_DMA)
-        EVE_cmd_number(100, EVE_VSIZE - 65, 26, EVE_OPT_RIGHTX, cmd_fifo_size); /* number of bytes written to the cmd-fifo */
-        #endif
-        EVE_cmd_number(300, EVE_VSIZE - 50, 26, EVE_OPT_RIGHTX, display_list_size); /* number of bytes written to the display-list by the command co-pro */
-        EVE_cmd_number(304, EVE_VSIZE - 35, 26, EVE_OPT_RIGHTX|6U, num_profile_a); /* duration in us of TFT_loop() for the touch-event part */
-        EVE_cmd_number(304, EVE_VSIZE - 20, 26, EVE_OPT_RIGHTX|6U, num_profile_b); /* duration in us of TFT_loop() for the display-list part */
-
-        EVE_display(); /* mark the end of the display list */
-        EVE_cmd_swap(); /* make this list active */
-
-        EVE_end_cmd_burst(); /* stop writing to the cmd-fifo, the cmd-FIFO will be executed automatically after this or when DMA is done */
-    }
-}
+{}
 #endif

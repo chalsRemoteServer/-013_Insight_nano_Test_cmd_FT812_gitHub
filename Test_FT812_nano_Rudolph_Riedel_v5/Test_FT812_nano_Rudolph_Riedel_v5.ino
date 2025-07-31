@@ -52,10 +52,10 @@ void loop()
         {display_delay = 0;
          TFT_display();
          micros_end = micros();
-         num_profile_a = (micros_end - micros_start); }/* calculate the micro-seconds passed during the call to TFT_display */
-      else
+         num_profile_a++;}// = (micros_end - micros_start); }/* calculate the micro-seconds passed during the call to TFT_display */
+        else
         {  TFT_touch();
            micros_end = micros();
-           num_profile_b = (micros_end - micros_start);} /* calculate the micro-seconds passed during the call to TFT_touch */
+           num_profile_b++;}// = (micros_end - micros_start);} /* calculate the micro-seconds passed during the call to TFT_touch */
     }//-------------------------------------------------------------------------------------------------------------------------
 }//*****************************************************************************************************************************
