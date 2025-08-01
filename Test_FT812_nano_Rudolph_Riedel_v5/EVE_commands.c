@@ -3818,32 +3818,35 @@ void EVE_cmd_swap(void)
 /**
  * @brief Swap the current display list, only works in burst-mode.
  */
-void EVE_cmd_swap_burst(void)
-{
-    spi_transmit_burst(CMD_SWAP);
-}
+void EVE_cmd_swap_burst(void){
+     spi_transmit_burst(CMD_SWAP); }
 
-/**
- * @brief Draw a text string.
- */
+
+void EVE_cmd_text_bold(const int16_t xc0, const int16_t yc0, const uint16_t font, const uint16_t options, const char * const p_text){
+  if(font==25){
+            EVE_cmd_text(xc0,yc0,font,options,p_text);
+            EVE_cmd_text(xc0+1,yc0+1,font,options,p_text);
+            EVE_cmd_text(xc0+2,yc0+2,font,options,p_text);
+  }
+  else{  
+    EVE_cmd_text(xc0,yc0,font,options,p_text);
+    EVE_cmd_text(xc0+1,yc0+1,font,options,p_text);}
+}//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+/**  @brief Draw a text string.*/
 void EVE_cmd_text(const int16_t xc0, const int16_t yc0, const uint16_t font, const uint16_t options, const char * const p_text)
-{
-    if (0U == cmd_burst)
-    {
+{   if (0U == cmd_burst){
         eve_begin_cmd(CMD_TEXT);
         spi_transmit_32(i16_i16_to_u32(xc0, yc0));
         spi_transmit_32(u16_u16_to_u32(font, options));
         private_string_write(p_text);
-        EVE_cs_clear();
-    }
-    else
-    {
-        spi_transmit_burst(CMD_TEXT);
-        spi_transmit_burst(i16_i16_to_u32(xc0, yc0));
-        spi_transmit_burst(u16_u16_to_u32(font, options));
-        private_string_write(p_text);
-    }
-}
+        EVE_cs_clear();}
+    else{spi_transmit_burst(CMD_TEXT);
+         spi_transmit_burst(i16_i16_to_u32(xc0, yc0));
+         spi_transmit_burst(u16_u16_to_u32(font, options));
+         private_string_write(p_text);}
+}//-----------------------------------------------------------------------------------------------------------------------
 
 /**
  * @brief Draw a text string, only works in burst-mode.

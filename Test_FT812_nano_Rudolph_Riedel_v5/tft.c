@@ -220,11 +220,7 @@ void touch_calibrate(void)
 
 void initStaticBackground(void)
 {
-#if EVE_GEN > 4
-    EVE_cmd_newlist(MEM_DL_STATIC); /* workaround for BT820 using REGION which can not work with CMD_APPEND */
-#else
     EVE_cmd_dlstart(); /* Start the display list */
-#endif
     EVE_tag(0); /* tag = 0 - do not use the following objects for touch-detection */
     EVE_cmd_bgcolor(WHITE); /* light grey */
     EVE_vertex_format(_FRAC_PRESICION); /* set to 0 - reduce precision for VERTEX2F to 1 pixel instead of 1/16 pixel default */
@@ -251,78 +247,37 @@ void initStaticBackground(void)
     EVE_vertex2f(EVE_HSIZE*PRESICION,Y_PANEL_TOP*PRESICION);
     EVE_end();
 
- #if (TEST_UTF8 != 0) && (EVE_GEN > 2)
-    EVE_cmd_setfont2(12,MEM_FONT,32); /* assign bitmap handle to a custom font */
-    EVE_cmd_text(EVE_HSIZE/2, 15, 12, EVE_OPT_CENTERX, "EVE Demo X");
-#else
     EVE_color_rgb(BLACK); 
-    EVE_cmd_text(X_USER*PRESICION, Y_USER*PRESICION, USER_SIZE, EVE_OPT_CENTERX, "Ningun Usuario");
-    EVE_cmd_text(X_USER*PRESICION+1, Y_USER*PRESICION+1, USER_SIZE, EVE_OPT_CENTERX, "Ningun Usuario");
+    EVE_cmd_text(X_USER*PRESICION, Y_USER*PRESICION, USER_FONT_SIZE, EVE_OPT_CENTERX, "Ningun Usuario");
+    EVE_cmd_text(X_USER*PRESICION+1, Y_USER*PRESICION+1, USER_FONT_SIZE, EVE_OPT_CENTERX, "Ningun Usuario");
     
-#endif
 
     /* add the static text to the list */
-#if defined (EVE_DMA)
-    EVE_cmd_text(10, EVE_VSIZE - 65, 26, 0, "Bytes:");
-#endif
-    EVE_cmd_text(30, EVE_VSIZE - 250, 31, 0, "DL-size:");
-    EVE_cmd_text(30, EVE_VSIZE - 135, 31, 0, "Time1:");
-    EVE_cmd_text(30, EVE_VSIZE - 120, 31, 0, "Time2:");
-
-    EVE_cmd_text(105, EVE_VSIZE - 135, 31, 0, "us");
-    EVE_cmd_text(105, EVE_VSIZE - 120, 31, 0, "us");
-
-#if EVE_GEN > 4
-    EVE_cmd_endlist(); /* workaround for BT820 widgets using REGION which can not work with CMD_APPEND */
-#else
+    EVE_cmd_text_bold(X_LabelParameter, 100, USER_FONT_SIZE, 0, "Metal signal");
+    EVE_cmd_text_bold(X_LabelParameter, 150, USER_FONT_SIZE, 0, "0%");
+    EVE_cmd_text_bold(X_LabelParameter, 200, USER_FONT_SIZE, 0, "Audicheck");
+    EVE_cmd_text_bold(X_LabelParameter, 250, USER_FONT_SIZE, 0, "External");
+    EVE_cmd_text_bold(X_LabelParameter, 300, USER_FONT_SIZE, 0, "0s");
+    EVE_cmd_text_bold(80,Y_PANEL_TOP+25, PRODUCT_FONT_SIZE, 0, "1: Product 1");
+    
     EVE_execute_cmd();
     num_dl_static = EVE_memRead16(REG_CMD_DL);
     EVE_cmd_memcpy(MEM_DL_STATIC, EVE_RAM_DL, num_dl_static);
     EVE_execute_cmd();
-#endif
+
 }
 
 
-void TFT_init(void)
-{
-    if(E_OK == EVE_init())
-    {
+void TFT_init(void){
+    if(E_OK == EVE_init()){
         tft_active = 1;
-
         EVE_memWrite32(REG_PWM_DUTY, 0x30);  /* setup backlight, range is from 0 = off to 0x80 = max */
         touch_calibrate();
-
-#if (TEST_UTF8 != 0) && (EVE_GEN > 2)   /* we need a BT81x for this */
-    #if 0
-        /* this is only needed once to transfer the flash-image to the external flash */
-        uint32_t datasize;
-
-        EVE_cmd_inflate(0, flash, sizeof(flash)); /* de-compress flash-image to RAM_G */
-        datasize = EVE_cmd_getptr(); /* we unpacked to RAM_G address 0x0000, so the first address after the unpacked data also is the size */
-        EVE_cmd_flashupdate(0,0,4096); /* write blob first */
-        if (E_OK == EVE_init_flash())
-        {
-            EVE_cmd_flashupdate(0,0,(datasize|4095)+1); /* size must be a multiple of 4096, so set the lower 12 bits and add 1 */
-        }
-    #endif
-
-    if (E_OK == EVE_init_flash())
-    {
-        EVE_cmd_flashread(MEM_FONT, 61376, 320); /* copy .xfont from FLASH to RAM_G, offset and length are from the .map file */
-    }
-
-#endif /* TEST_UTF8 */
-
-#if EVE_GEN > 4
-        EVE_cmd_inflate(MEM_LOGO, 0, logo, sizeof(logo)); /* load logo into gfx-memory and de-compress it */
-#else
         EVE_cmd_inflate(MEM_LOGO, logo, sizeof(logo)); /* load logo into gfx-memory and de-compress it */
-#endif
         EVE_cmd_loadimage(MEM_PIC1, EVE_OPT_NODL, pic, sizeof(pic));
-
         initStaticBackground();
-    }
-}
+    }//------------------------------------------------------------------
+}//-----------------------------------------------------------------------------------------------------
 
 uint16_t toggle_state = 0;
 uint16_t display_list_size = 0;
@@ -380,9 +335,7 @@ void TFT_touch(void)
  optimize some more by using the special EVE_cmd_xxx_burst() functions
 */
 void TFT_display(void)
-{
-    static int32_t rotate = 0;
-
+{static int32_t rotate = 0;
     if(tft_active != 0U)
     {
         EVE_start_cmd_burst(); /* start writing to the cmd-fifo as one stream of bytes, only sending the address once */
@@ -391,11 +344,7 @@ void TFT_display(void)
         EVE_clear_burst(1, 1, 1); /* clear the screen - this and the previous prevent artifacts between lists, Attributes are the color, stencil and tag buffers */
         EVE_tag_burst(0); /* no touch */
 
-#if EVE_GEN > 4
-        EVE_cmd_calllist_burst(MEM_DL_STATIC); /* insert static part of display-list from copy in gfx-mem */
-#else
         EVE_cmd_append_burst(MEM_DL_STATIC, num_dl_static); /* insert static part of display-list from copy in gfx-mem */
-#endif
 
         /* display a button  boton de pruebas  mover aqui*/
         EVE_color_rgb_burst(LIME_GREEN);
@@ -407,23 +356,12 @@ void TFT_display(void)
         /* display a picture and rotate it when the button on top is activated */
         EVE_cmd_setbitmap_burst(MEM_PIC1, EVE_RGB565, 100U, 100U);
 
-        //EVE_save_context_burst();
-        EVE_cmd_loadidentity_burst();
-        EVE_cmd_translate_burst(65536 * 70, 65536 * 50); /* shift off-center */
-        EVE_cmd_rotate_burst(rotate);
-        EVE_cmd_translate_burst(65536 * -70, 65536 * -50); /* shift back */
-        EVE_cmd_setmatrix_burst();
 
-        if(toggle_state != 0U)
-        {
-            rotate += 256;
-        }
+        if(toggle_state != 0U){rotate += 256;}
 
         EVE_begin_burst(EVE_BITMAPS);
         EVE_vertex2f_burst(EVE_HSIZE - 100, LAYOUT_Y1);
         EVE_end_burst();
-
-        //EVE_restore_context_burst();
 
         /* print profiling values */
         EVE_color_rgb_burst(BLACK);

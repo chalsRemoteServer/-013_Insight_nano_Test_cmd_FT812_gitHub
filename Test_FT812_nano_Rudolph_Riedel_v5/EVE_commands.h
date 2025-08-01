@@ -453,6 +453,7 @@ void EVE_cmd_stop(void);
 void EVE_cmd_stop_burst(void);
 void EVE_cmd_swap(void);
 void EVE_cmd_swap_burst(void);
+void EVE_cmd_text_bold(const int16_t xc0, const int16_t yc0, const uint16_t font, const uint16_t options, const char * const p_text);
 void EVE_cmd_text(const int16_t xc0, const int16_t yc0, const uint16_t font, const uint16_t options, const char * const p_text);
 void EVE_cmd_text_burst(const int16_t xc0, const int16_t yc0, const uint16_t font, const uint16_t options, const char * const p_text);
 void EVE_cmd_toggle(const int16_t xc0, const int16_t yc0, const uint16_t wid, const uint16_t font,
